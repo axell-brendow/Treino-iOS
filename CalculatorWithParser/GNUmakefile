@@ -4,14 +4,14 @@
 #
 include $(GNUSTEP_MAKEFILES)/common.make
 
-# make a simple program in Objective-C, call it Calculator
-TOOL_NAME = Calculator
+# make a simple program in Objective-C, call it CalculatorWithParser
+TOOL_NAME = CalculatorWithParser
 
 # The implementation Objective-C file which is going to be compiled
-Calculator_OBJC_FILES = Calculator.m
+CalculatorWithParser_OBJC_FILES = CalculatorWithParser.m
 
 # Header files of your project
-#Calculator_HEADER_FILES = xxx.h //here goes all header files (.h). For the moment, on n'en a pas.
+#CalculatorWithParser_HEADER_FILES = xxx.h //here goes all header files (.h). For the moment, on n'en a pas.
 
 # Define compilation flags
 ADDITIONAL_CPPFLAGS = -Wall -Wno-import

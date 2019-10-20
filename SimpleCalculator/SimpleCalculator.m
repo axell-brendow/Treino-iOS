@@ -1,7 +1,10 @@
 #import <Foundation/Foundation.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// https://sweettutos.com/2012/08/11/objective-c-on-windows-yes-you-can/
 
 #define operate(operator) (operand1 operator operand2)
 
