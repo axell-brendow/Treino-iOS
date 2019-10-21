@@ -47,7 +47,7 @@
 
 - (void) readOperation
 {
-    printf("Enter an expression. Ex.:  1 + 3 * 4 / 2  or\n\
+    printf("Enter an expression. Ex.:  (4 * (1 + 3)) + 2 * 2   or\n\
 exit to exit: ");
 
     fgets(myOperation, OPERATION_SIZE, stdin);

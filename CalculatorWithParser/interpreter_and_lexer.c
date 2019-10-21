@@ -9,7 +9,8 @@ int main()
     char expression[MAX_EXPRESSION_SIZE];
     // strcpy(expression, "1 + 2 * 3");
     
-    printf("Enter an expression: ");
+    printf("Enter an expression. Ex.:  (4 * (1 + 3)) + 2 * 2   or\n\
+exit to exit: ");
 
     fgets(expression, MAX_EXPRESSION_SIZE, stdin);
     expression[strlen(expression) - 1] = '\0';

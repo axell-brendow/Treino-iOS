@@ -190,6 +190,11 @@ struct Interpreter
     Token* current_token;
 };
 
+void interpreter_eat(Interpreter* interpreter, const char* token_type);
+double interpreter_factor(Interpreter *interpreter);
+double interpreter_term(Interpreter* interpreter);
+double interpreter_expr(Interpreter* interpreter);
+
 Interpreter* interpreter_new(Lexer* lexer)
 {
     Interpreter* interpreter = (Interpreter*) malloc(sizeof(Interpreter));
@@ -229,10 +234,23 @@ void interpreter_eat(Interpreter* interpreter, const char* token_type)
  */
 double interpreter_factor(Interpreter *interpreter)
 {
-    // factor : NUMBER
-    double value = interpreter->current_token->value;
+    // factor : NUMBER | LPAREN expr RPAREN
+    double value = EOF;
 
-    interpreter_eat(interpreter, NUMBER);
+    if (equals(interpreter->current_token->type, NUMBER))
+    {
+        value = interpreter->current_token->value;
+        interpreter_eat(interpreter, NUMBER);
+    }
+
+    else if (equals(interpreter->current_token->type, LPAREN))
+    {
+        interpreter_eat(interpreter, LPAREN);
+        value = interpreter_expr(interpreter);
+        interpreter_eat(interpreter, RPAREN);
+    }
+
+    else lexer_error(interpreter->lexer, "invalid token");
 
     return value;
 }
@@ -275,12 +293,12 @@ double interpreter_term(Interpreter* interpreter)
     return result;
 }
 
-double interpreter_run(Interpreter* interpreter)
+double interpreter_expr(Interpreter* interpreter)
 {
     /*
     expr   : term ((PLUS | MINUS) term)*
     term   : factor ((MUL | DIV) factor)*
-    factor : NUMBER
+    factor : NUMBER | LPAREN expr RPAREN
     */
 
     double result = interpreter_term(interpreter);
@@ -303,8 +321,15 @@ double interpreter_run(Interpreter* interpreter)
             result = result - interpreter_term(interpreter);
         }
     }
+    
+    return result;
+}
+
+double interpreter_run(Interpreter* interpreter)
+{
+    double result = interpreter_expr(interpreter);
 
     free(interpreter->current_token);
-    
+
     return result;
 }
