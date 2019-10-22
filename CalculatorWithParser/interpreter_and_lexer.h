@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 // https://ruslanspivak.com/lsbasi-part5/
 
@@ -43,9 +44,14 @@ int isWhitespace(char c)
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
+int isOnInterval(int lowerValue, int greaterValue, int value)
+{
+    return value >= lowerValue && value <= greaterValue;
+}
+
 int isDigit(char c)
 {
-    return c >= '0' && c <= '9';
+    return isOnInterval('0', '9', c);
 }
 
 // -------------------- Class Lexer
@@ -74,16 +80,26 @@ Lexer* lexer_new(const char *expression)
     return lexer;
 }
 
-void lexer_error(Lexer* lexer, const char *msg)
+void lexer_error(Lexer* lexer, const char *format, ...)
 {
-    fprintf(stderr, "\nERROR: %s\n%s\n", msg, lexer->expression);
-    char spaces[lexer->pos + 2];
+    char errorMsg[MAX_EXPRESSION_SIZE + 2];
+    va_list args;
+    va_start(args, format);
+    vsprintf(errorMsg, format, args); // Sends the formatted string to errorMsg
+    va_end(args);
 
-    memset(spaces, ' ', lexer->pos); // Preenche spaces com ' '
+    // Shows the error and the expression
+    fprintf(stderr, "\nERROR: %s\n%s\n", errorMsg, lexer->expression);
 
-    spaces[lexer->pos] = '^';
-    spaces[lexer->pos + 1] = '\0';
-    puts(spaces);
+    // Creates an array to store the string that will show where the compilation stopped
+    char spaces[lexer->pos + 3];
+
+    memset(spaces, ' ', lexer->pos); // Fill it with ' '
+
+    spaces[lexer->pos] = '^'; // Put an indicator where compilation stopped
+    spaces[lexer->pos + 1] = '\n';
+    spaces[lexer->pos + 2] = '\0';
+    fprintf(stderr, spaces);
 
     exit(1);
 }
@@ -174,7 +190,7 @@ Token *lexer_next_token(Lexer* lexer)
             return token_new(DIV, '/');
         }
 
-        lexer_error(lexer, "undefined token");
+        lexer_error(lexer, "undefined token '%c'", lexer->current_char);
     }
 
     return token_new(EOFTOKEN, EOF);
@@ -195,12 +211,12 @@ double interpreter_factor(Interpreter *interpreter);
 double interpreter_term(Interpreter* interpreter);
 double interpreter_expr(Interpreter* interpreter);
 
-Interpreter* interpreter_new(Lexer* lexer)
+Interpreter* interpreter_new(const char *expression)
 {
     Interpreter* interpreter = (Interpreter*) malloc(sizeof(Interpreter));
 
-    interpreter->lexer = lexer;
-    interpreter->current_token = lexer_next_token(lexer);
+    interpreter->lexer = lexer_new(expression);
+    interpreter->current_token = lexer_next_token(interpreter->lexer);
 
     return interpreter;
 }
@@ -220,9 +236,9 @@ void interpreter_eat(Interpreter* interpreter, const char* token_type)
     }
 
     else if (equals(interpreter->current_token->type, EOFTOKEN))
-        lexer_error(interpreter->lexer, "End-of-file");
+        lexer_error(interpreter->lexer, "End-of-file, expected (%s)", token_type);
 
-    else lexer_error(interpreter->lexer, "invalid token type");
+    else lexer_error(interpreter->lexer, "invalid token type, expected (%s)", token_type);
 }
 
 /**
@@ -230,7 +246,7 @@ void interpreter_eat(Interpreter* interpreter, const char* token_type)
  * 
  * @param interpreter Expression interpreter.
  * 
- * @return double Search's result (the number).
+ * @return double Numeric value of this factor.
  */
 double interpreter_factor(Interpreter *interpreter)
 {
@@ -250,7 +266,7 @@ double interpreter_factor(Interpreter *interpreter)
         interpreter_eat(interpreter, RPAREN);
     }
 
-    else lexer_error(interpreter->lexer, "invalid token");
+    else lexer_error(interpreter->lexer, "invalid token, expected NUMBER or LPAREN");
 
     return value;
 }
@@ -264,7 +280,7 @@ double interpreter_factor(Interpreter *interpreter)
  * 
  * @param interpreter Expression interpreter.
  * 
- * @return double Search's result (the number).
+ * @return double Numeric value of this term.
  */
 double interpreter_term(Interpreter* interpreter)
 {

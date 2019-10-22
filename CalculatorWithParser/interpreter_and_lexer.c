@@ -15,12 +15,10 @@ exit to exit: ");
     fgets(expression, MAX_EXPRESSION_SIZE, stdin);
     expression[strlen(expression) - 1] = '\0';
 
-    Lexer* lexer = lexer_new(expression);
-    Interpreter* interpreter = interpreter_new(lexer);
+    Interpreter* interpreter = interpreter_new(expression);
 
     printf("\n%s = %g\n", expression, interpreter_run(interpreter));
 
-    free(lexer);
     free(interpreter);
 
     return 0;
