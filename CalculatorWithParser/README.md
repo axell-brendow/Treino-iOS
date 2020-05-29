@@ -1,3 +1,7 @@
+## Requirements
+
+- GNUstep environment to make and compile the Objective-C file.
+
 ## How to use ?
 
 Same commands for Windows, MAC and Linux:
